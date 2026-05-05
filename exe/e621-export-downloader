@@ -1,0 +1,112 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require("optparse")
+require("date")
+require("e621_export_downloader")
+
+options = {
+  cache:               true,
+  rewind_on_not_found: false,
+}
+
+parser = OptionParser.new do |opts| # rubocop:disable Metrics/BlockLength
+  opts.program_name = "e621-export-downloader"
+  opts.banner = <<~BANNER
+    Usage: e621-export-downloader [options] <command> [args]
+
+    Commands:
+      exists <name> [date]      Check if an export exists for a given date
+      download <name> [date]    Download an export for a given date
+      read <name> [date]        Read an export as individual JSON lines
+      read-all <name> [date]    Read an export as a JSON array
+
+    Options:
+  BANNER
+
+  opts.on("--[no-]cache", "Cache downloaded exports (default: enabled)") { |v| options[:cache] = v }
+
+  opts.on("--rewind-on-not-found [DAYS]", Integer,
+          "Rewind date if export not found; optionally limit how many days (true = 2)") do |v|
+    options[:rewind_on_not_found] = v || true
+  end
+  opts.on("--no-rewind-on-not-found", "Disable rewinding of export dates (default)") do
+    options[:rewind_on_not_found] = false
+  end
+
+  opts.on("-v", "--version", "Print the version") do
+    puts(E621ExportDownloader::Constants::VERSION)
+    exit
+  end
+
+  opts.on_tail("-h", "--help", "Print this help") do
+    puts(opts)
+    exit
+  end
+end
+
+parser.order!(ARGV)
+
+command = ARGV.shift
+if command.nil?
+  puts(parser)
+  exit(1)
+end
+
+name = ARGV.shift
+if name.nil?
+  warn("Error: export name is required")
+  exit(1)
+end
+
+date_str = ARGV.shift
+date = date_str ? Date.parse(date_str) : Date.today
+
+client = E621ExportDownloader::Client.new(
+  E621ExportDownloader::Client::Options.new(
+    cache:               options[:cache],
+    rewind_on_not_found: options[:rewind_on_not_found],
+  ),
+)
+
+# Downloads via the helper (respects rewind_on_not_found) and returns an Export
+# handle that is already marked as downloaded so read won't re-fetch.
+def download_and_open(helper, date)
+  path = helper.download(date)
+  resolved_date = Date.parse(File.basename(path, ".csv")[-10..])
+  E621ExportDownloader::Export.new(date: resolved_date, helper: helper)
+end
+
+helper = client.get(name)
+
+case command
+when "exists"
+  print(helper.exists?(date))
+
+when "download"
+  print(helper.download(date))
+
+when "read"
+  export = download_and_open(helper, date)
+  first = true
+  export.read do |record, _total|
+    $stdout.write("\n") unless first
+    first = false
+    $stdout.write(record.to_json)
+  end
+
+when "read-all"
+  export = download_and_open(helper, date)
+  $stdout.write("[")
+  first = true
+  export.read do |record, _total|
+    $stdout.write(",") unless first
+    first = false
+    $stdout.write(record.to_json)
+  end
+  $stdout.write("]")
+
+else
+  warn("Error: unknown command '#{command}'. Run with --help for usage.")
+  exit(1)
+end
