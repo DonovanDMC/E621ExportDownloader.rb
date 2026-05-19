@@ -139,6 +139,22 @@ e621-export-downloader --rewind-on-not-found 5    # enable rewinding (up to 5 da
 e621-export-downloader --no-rewind-on-not-found   # disable rewinding (default)
 ```
 
+## ActiveJob Integration
+
+`E621ExportDownloader::Serializers::ActiveJob` allows `E621ExportDownloader::Types` values to be passed as ActiveJob arguments.
+
+In a **Rails app** the serializer is registered automatically — no extra setup needed.
+
+In a **non-Rails app** using ActiveJob standalone, register it manually after loading both gems:
+
+```ruby
+require("activejob")
+require("e621_export_downloader")
+require("e621_export_downloader/serializers/active_job")
+
+ActiveJob::Serializers.add_serializers(E621ExportDownloader::Serializers::ActiveJob)
+```
+
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/DonovanDMC/E621ExportDownloader.rb.

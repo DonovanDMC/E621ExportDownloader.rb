@@ -14,3 +14,5 @@ gem("rubocop-rake", "~> 0.7.1")
 
 gem("sorbet", group: :development)
 gem("tapioca", require: false, group: %i[development test])
+
+gem("rails", "~> 7.1")
