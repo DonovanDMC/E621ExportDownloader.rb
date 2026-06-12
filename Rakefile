@@ -8,6 +8,11 @@ Rake::TestTask.new(:test) do |t|
   t.pattern = "test/**/*_test.rb"
 end
 
-RuboCop::RakeTask.new
+namespace(:test) do
+  desc("Test Zeitwerk Auto-Importing")
+  task(:zeitwerk) do
+    exec(%(bundle exec ruby -e "require 'e621_export_downloader'; Zeitwerk::Loader.eager_load_all"))
+  end
+end
 
 task(default: :rubocop)

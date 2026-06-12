@@ -21,7 +21,7 @@ class InstallGeneratorTest < Rails::Generators::TestCase
   test("creates initializer") do
     run_generator
     assert_file("config/initializers/e621_models.rb") do |content|
-      assert_match(%r{require\("e621_export_downloader/models"\)}, content)
+      assert_match(%r{require\("e621_export_downloader/active_record_models"\)}, content)
       assert_match(/E621::Artist\s+-\s+e621\.artists/, content)
     end
   end

@@ -8,7 +8,7 @@ loader.inflector.inflect({ "api_export_data" => "APIExportData" })
 loader.ignore("#{__dir__}/e621_export_downloader/version.rb")
 loader.ignore("#{__dir__}/e621_export_downloader/railtie.rb")
 loader.ignore("#{__dir__}/e621_export_downloader/serializers/active_job.rb")
-loader.ignore("#{__dir__}/e621_export_downloader/models.rb")
+loader.ignore("#{__dir__}/e621_export_downloader/active_record_models.rb")
 loader.ignore("#{__dir__}/e621")
 loader.ignore("#{__dir__}/generators")
 loader.setup

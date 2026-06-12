@@ -16,4 +16,4 @@ jobs:
         with:
           ruby-version: .ruby-version
           bundler-cache: true
-      - run: bundle exec ruby -e "require 'e621_export_downloader'; Zeitwerk::Loader.eager_load_all"
+      - run: bundle exec rake test:zeitwerk
