@@ -2,6 +2,7 @@
 # typed: strict
 
 require("faraday")
+require("json")
 
 module E621ExportDownloader
   class Client
@@ -15,6 +16,7 @@ module E621ExportDownloader
     sig { params(options: T.nilable(Options)).void }
     def initialize(options = nil)
       @options = T.let(options || Options.new, Options)
+      @export_cache = T.let(nil, T.nilable(T::Array[APIExportData]))
     end
 
     sig { params(block: T.proc.params(arg0: Options::Builder).void).void }
@@ -24,7 +26,7 @@ module E621ExportDownloader
 
     sig { returns(Faraday::Connection) }
     def connection
-      Faraday.new(url: Constants::BASE_URL, headers: { "User-Agent" => Constants::USER_AGENT })
+      Faraday.new(headers: { "User-Agent" => Constants::USER_AGENT })
     end
 
     sig { params(msg: String, header: T::Array[String]).void }
@@ -32,89 +34,60 @@ module E621ExportDownloader
       Logger.debug("[e621_export_downloader#{":#{header.join(':')}" unless header.empty?}] #{msg}")
     end
 
-    sig { params(type: T.any(Types, String)).returns(ExportHelper[T.untyped]) }
+    sig { params(type: T.any(Types, String)).returns(Export[T.untyped]) }
     def get(type)
-      if type.is_a?(String)
-        case type
-        when "pools"
-          type = Types::Pools
-        when "posts"
-          type = Types::Posts
-        when "tag_aliases"
-          type = Types::TagAliases
-        when "tag_implications"
-          type = Types::TagImplications
-        when "tags"
-          type = Types::Tags
-        when "wiki_pages"
-          type = Types::WikiPages
-        else
-          raise(ArgumentError, "invalid type: #{type}")
-        end
-      end
-
+      type = string_to_type(type) if type.is_a?(String)
       T.assert_type!(type, Types)
-      ExportHelper.new(client: self, type: type, parser: options.parsers.public_send(type.serialize))
+      data = get_data.find { |d| d.name == type }
+      raise(ResolveError, "Export data for \"#{type.serialize}\" not found") if data.nil?
+      debug("creating export for #{type.serialize}")
+      Export.new(data: data, client: self, type: type, parser: options.parsers.public_send(type.serialize))
     end
 
-    sig { returns(ExportHelper[Models::Pool]) }
-    def pools
-      get(Types::Pools)
+    sig { params(type: T.any(Types, String)).returns(ExportHelper[T.untyped]) }
+    def get_deferred(type)
+      type = string_to_type(type) if type.is_a?(String)
+      T.assert_type!(type, Types)
+      debug("creating deferred export for #{type.serialize}")
+      ExportHelper.new(type: type, client: self)
     end
 
-    sig { params(date: T.any(Date, DateTime)).returns(Export[Models::Pool]) }
-    def get_pools(date = Date.today)
-      pools.get(date)
+    sig { returns(T::Array[APIExportData]) }
+    def get_data
+      return @export_cache unless @export_cache.nil?
+      debug("fetching export data from api")
+      res = connection.get(Constants::API_URL)
+      raise(ResolveError, "Failed to fetch exports: #{res.status} #{res.reason_phrase}") unless res.success?
+      data = JSON.parse(T.unsafe(res).body)
+      result = T.let(data.map do |d|
+        APIExportData.new(
+          file_name:  d["file_name"],
+          file_size:  d["file_size"].to_i,
+          name:       Types.deserialize(d["name"]),
+          updated_at: d["updated_at"],
+          url:        d["url"],
+        )
+      end, T::Array[APIExportData])
+      @export_cache = result
     end
 
-    sig { returns(ExportHelper[Models::Post]) }
-    def posts
-      get(Types::Posts)
-    end
+    private
 
-    sig { params(date: T.any(Date, DateTime)).returns(Export[Models::Post]) }
-    def get_posts(date = Date.today)
-      posts.get(date)
-    end
-
-    sig { returns(ExportHelper[Models::TagAlias]) }
-    def tag_aliases
-      get(Types::TagAliases)
-    end
-
-    sig { params(date: T.any(Date, DateTime)).returns(Export[Models::TagAlias]) }
-    def get_tag_aliases(date = Date.today)
-      tag_aliases.get(date)
-    end
-
-    sig { returns(ExportHelper[Models::TagImplication]) }
-    def tag_implications
-      get(Types::TagImplications)
-    end
-
-    sig { params(date: T.any(Date, DateTime)).returns(Export[Models::TagImplication]) }
-    def get_tag_implications(date = Date.today)
-      tag_implications.get(date)
-    end
-
-    sig { returns(ExportHelper[Models::Tag]) }
-    def tags
-      get(Types::Tags)
-    end
-
-    sig { params(date: T.any(Date, DateTime)).returns(Export[Models::Tag]) }
-    def get_tags(date = Date.today)
-      tags.get(date)
-    end
-
-    sig { returns(ExportHelper[Models::WikiPage]) }
-    def wiki_pages
-      get(Types::WikiPages)
-    end
-
-    sig { params(date: T.any(Date, DateTime)).returns(Export[Models::WikiPage]) }
-    def get_wiki_pages(date = Date.today)
-      wiki_pages.get(date)
+    sig { params(type: String).returns(Types) }
+    def string_to_type(type)
+      case type
+      when "artists"              then Types::Artists
+      when "bulk_update_requests" then Types::BulkUpdateRequests
+      when "pools"                then Types::Pools
+      when "posts"                then Types::Posts
+      when "post_replacements"    then Types::PostReplacements
+      when "post_versions"        then Types::PostVersions
+      when "tag_aliases"          then Types::TagAliases
+      when "tag_implications"     then Types::TagImplications
+      when "tags"                 then Types::Tags
+      when "wiki_pages"           then Types::WikiPages
+      else raise(ArgumentError, "invalid type: #{type}")
+      end
     end
   end
 end

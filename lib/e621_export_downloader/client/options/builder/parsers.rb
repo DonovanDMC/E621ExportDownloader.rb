@@ -9,10 +9,22 @@ module E621ExportDownloader
           extend(T::Sig)
 
           sig { returns(Parser) }
+          attr_accessor(:artists)
+
+          sig { returns(Parser) }
+          attr_accessor(:bulk_update_requests)
+
+          sig { returns(Parser) }
           attr_accessor(:pools)
 
           sig { returns(Parser) }
           attr_accessor(:posts)
+
+          sig { returns(Parser) }
+          attr_accessor(:post_replacements)
+
+          sig { returns(Parser) }
+          attr_accessor(:post_versions)
 
           sig { returns(Parser) }
           attr_accessor(:tag_aliases)
@@ -28,12 +40,16 @@ module E621ExportDownloader
 
           sig { params(defaults: Options::Parsers).void }
           def initialize(defaults = Options::Parsers.defaults)
-            @pools = T.let(T.must(defaults.pools), Parser)
-            @posts = T.let(T.must(defaults.posts), Parser)
-            @tag_aliases = T.let(T.must(defaults.tag_aliases), Parser)
-            @tag_implications = T.let(T.must(defaults.tag_implications), Parser)
-            @tags = T.let(T.must(defaults.tags), Parser)
-            @wiki_pages = T.let(T.must(defaults.wiki_pages), Parser)
+            @artists              = T.let(T.must(defaults.artists), Parser)
+            @bulk_update_requests = T.let(T.must(defaults.bulk_update_requests), Parser)
+            @pools                = T.let(T.must(defaults.pools), Parser)
+            @posts                = T.let(T.must(defaults.posts), Parser)
+            @post_replacements    = T.let(T.must(defaults.post_replacements), Parser)
+            @post_versions        = T.let(T.must(defaults.post_versions), Parser)
+            @tag_aliases          = T.let(T.must(defaults.tag_aliases), Parser)
+            @tag_implications     = T.let(T.must(defaults.tag_implications), Parser)
+            @tags                 = T.let(T.must(defaults.tags), Parser)
+            @wiki_pages           = T.let(T.must(defaults.wiki_pages), Parser)
           end
         end
       end

@@ -151,6 +151,15 @@ Style/RedundantAssignment:
 Naming/AccessorMethodName:
   Enabled: false
 
+Naming/BlockForwarding:
+  Enabled: false
+
+Naming/MemoizedInstanceVariableName:
+  Enabled: false
+
+Style/ArgumentsForwarding:
+  Enabled: false
+
 Metrics/ParameterLists:
   Enabled: false
 
