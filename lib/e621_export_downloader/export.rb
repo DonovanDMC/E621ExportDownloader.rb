@@ -90,7 +90,7 @@ module E621ExportDownloader
       download unless check_downloaded
       client.debug("reading export", header: ["export:#{type.serialize}"])
       total = line_count
-      CSV.foreach(file_path, headers: true) do |row|
+      CSV.foreach(file_path, headers: true, converters: ->(f) { f.nil? ? "" : f }) do |row|
         args = [@parser.call(T.cast(row, CSV::Row).to_hash), total]
         args = args.slice(0, block.arity) if block.arity != -1
         block.call(*T.unsafe(args))

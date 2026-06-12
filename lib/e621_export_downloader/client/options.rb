@@ -23,16 +23,16 @@ module E621ExportDownloader
         sig { returns(Parsers) }
         def self.defaults
           Parsers.new(
-            artists:              ->(record) { Models::Artist.new(record) },
-            bulk_update_requests: ->(record) { Models::BulkUpdateRequest.new(record) },
-            pools:                ->(record) { Models::Pool.new(record) },
-            posts:                ->(record) { Models::Post.new(record) },
-            post_replacements:    ->(record) { Models::PostReplacement.new(record) },
-            post_versions:        ->(record) { Models::PostVersion.new(record) },
-            tag_aliases:          ->(record) { Models::TagAlias.new(record) },
-            tag_implications:     ->(record) { Models::TagImplication.new(record) },
-            tags:                 ->(record) { Models::Tag.new(record) },
-            wiki_pages:           ->(record) { Models::WikiPage.new(record) },
+            artists:              ->(record) { E621ExportDownloader::Models::Artist.new(record) },
+            bulk_update_requests: ->(record) { E621ExportDownloader::Models::BulkUpdateRequest.new(record) },
+            pools:                ->(record) { E621ExportDownloader::Models::Pool.new(record) },
+            posts:                ->(record) { E621ExportDownloader::Models::Post.new(record) },
+            post_replacements:    ->(record) { E621ExportDownloader::Models::PostReplacement.new(record) },
+            post_versions:        ->(record) { E621ExportDownloader::Models::PostVersion.new(record) },
+            tag_aliases:          ->(record) { E621ExportDownloader::Models::TagAlias.new(record) },
+            tag_implications:     ->(record) { E621ExportDownloader::Models::TagImplication.new(record) },
+            tags:                 ->(record) { E621ExportDownloader::Models::Tag.new(record) },
+            wiki_pages:           ->(record) { E621ExportDownloader::Models::WikiPage.new(record) },
           )
         end
       end
