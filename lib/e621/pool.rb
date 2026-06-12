@@ -2,10 +2,12 @@
 # typed: true
 
 require("active_record")
+require_relative("csv_importable")
 
 module E621
   class Pool < ActiveRecord::Base
     extend(T::Sig)
+    extend(E621::CsvImportable)
 
     self.table_name = "e621.pools"
     self.record_timestamps = false

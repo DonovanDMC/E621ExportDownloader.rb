@@ -5,7 +5,7 @@ class CreateE621Tables < ActiveRecord::Migration<%= migration_version %>
 <% if use_schema? -%>
     reversible do |r|
       r.up { execute("CREATE SCHEMA <%= schema %>") }
-      r.down { execute("DROP SCHEMA <%= schema %> CASCADE") }
+      r.down { execute("DROP SCHEMA <%= schema %>") }
     end
 
 <% end -%>

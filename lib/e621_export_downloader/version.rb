@@ -4,7 +4,7 @@
 # loaded by bundler
 module E621ExportDownloader
   module Constants
-    VERSION = "0.0.7"
+    VERSION = "0.0.8"
     WEBSITE = "https://github.com/DonovanDMC/E621ExportDownloader.rb"
   end
 end
