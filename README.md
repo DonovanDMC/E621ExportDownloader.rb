@@ -134,6 +134,66 @@ e621-export-downloader --cache     # enable caching
 e621-export-downloader --no-cache  # disable caching (default)
 ```
 
+## Rails Integration
+
+Run the install generator to copy the migration and create the initializer:
+
+```bash
+bin/rails g e621_export_downloader:install
+bin/rails db:migrate
+```
+
+Two options are available:
+
+| Option | Default | Description |
+|---|---|---|
+| `--schema NAME` | `e621` | Schema or prefix name for the tables |
+| `--table-format FORMAT` | `schema` | `schema` — tables in a PostgreSQL schema (`e621.artists`); `prefix` — tables in the default schema with a name prefix (`e621_artists`) |
+
+```bash
+# custom schema name
+bin/rails g e621_export_downloader:install --schema my_e621
+
+# prefix style instead of a dedicated schema
+bin/rails g e621_export_downloader:install --table-format prefix
+
+# combine both
+bin/rails g e621_export_downloader:install --schema my_e621 --table-format prefix
+```
+
+This generates:
+- `db/migrate/<timestamp>_create_e621_tables.rb` — creates all e621 tables (and the schema when using `--table-format schema`)
+- `config/initializers/e621_models.rb` — requires the ActiveRecord models
+
+The following ActiveRecord models are then available:
+
+| Model                     | Table                       |
+|---------------------------|-----------------------------|
+| `E621::Artist`            | `e621.artists`              |
+| `E621::BulkUpdateRequest` | `e621.bulk_update_requests` |
+| `E621::Pool`              | `e621.pools`                |
+| `E621::Post`              | `e621.posts`                |
+| `E621::PostReplacement`   | `e621.post_replacements`    |
+| `E621::PostVersion`       | `e621.post_versions`        |
+| `E621::Tag`               | `e621.tags`                 |
+| `E621::TagAlias`          | `e621.tag_aliases`          |
+| `E621::TagImplication`    | `e621.tag_implications`     |
+| `E621::WikiPage`          | `e621.wiki_pages`           |
+
+Each model provides `upsert_from_export` and `upsert_all_from_export` for persisting parsed export records:
+
+```ruby
+client = E621ExportDownloader::Client.new
+
+client.get("posts").read do |post|
+  E621::Post.upsert_from_export(post)
+end
+
+# or in batch
+posts = client.get("posts").read_all
+E621::Post.upsert_all_from_export(posts)
+```
+
 ## ActiveJob Integration
 
 `E621ExportDownloader::Serializers::ActiveJob` allows `E621ExportDownloader::Types` values to be passed as ActiveJob arguments.

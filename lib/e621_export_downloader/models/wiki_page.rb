@@ -28,7 +28,7 @@ module E621ExportDownloader
       attr_reader(:updated_at)
 
       sig { returns(T.nilable(Integer)) }
-      attr_reader(:uploader_id)
+      attr_reader(:updater_id)
 
       sig { params(record: T::Hash[String, String]).void }
       def initialize(record)
@@ -40,20 +40,20 @@ module E621ExportDownloader
         @is_locked = T.let(record["is_locked"] == "t", T::Boolean)
         @title = T.let(T.must(record["title"]), String)
         @updated_at = T.let(T.must(record["updated_at"]).empty? ? nil : DateTime.parse(record["updated_at"]), T.nilable(DateTime))
-        @uploader_id = T.let(T.must(record["uploader_id"]).empty? ? nil : record["uploader_id"].to_i, T.nilable(Integer))
+        @updater_id = T.let(T.must(record["updater_id"]).empty? ? nil : record["updater_id"].to_i, T.nilable(Integer))
       end
 
       sig { params(_args: T.untyped).returns(String) }
       def to_json(*_args)
         {
-          body:        @body,
-          created_at:  @created_at,
-          creator_id:  @creator_id,
-          id:          @id,
-          is_locked:   @is_locked,
-          title:       @title,
-          updated_at:  @updated_at,
-          uploader_id: @uploader_id,
+          body:       @body,
+          created_at: @created_at,
+          creator_id: @creator_id,
+          id:         @id,
+          is_locked:  @is_locked,
+          title:      @title,
+          updated_at: @updated_at,
+          updater_id: @updater_id,
         }.to_json
       end
     end

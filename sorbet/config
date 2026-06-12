@@ -1,5 +1,9 @@
 --dir
 .
+--ignore=db/
+--ignore=lib/generators/
+--ignore=lib/tasks/
+--ignore=test/
 --ignore=tmp/
 --ignore=vendor/
 --parser=prism

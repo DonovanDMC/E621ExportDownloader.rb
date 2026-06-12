@@ -114,7 +114,7 @@ module E621ExportDownloader
         @is_note_locked = T.let(record["is_note_locked"] == "t", T::Boolean)
         @is_pending = T.let(record["is_pending"] == "t", T::Boolean)
         @is_rating_locked = T.let(record["is_rating_locked"] == "t", T::Boolean)
-        @is_status_locked = T.let(record["is_rating_locked"] == "t", T::Boolean)
+        @is_status_locked = T.let(record["is_status_locked"] == "t", T::Boolean)
         @locked_tags = T.let(T.must(record["locked_tags"]), String)
         @md5 = T.let(T.must(record["md5"]).empty? ? nil : record["md5"], T.nilable(String))
         @parent_id = T.let(T.must(record["parent_id"]).empty? ? nil : record["parent_id"].to_i, T.nilable(Integer))
