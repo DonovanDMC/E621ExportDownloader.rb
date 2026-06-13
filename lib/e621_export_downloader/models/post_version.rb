@@ -30,6 +30,9 @@ module E621ExportDownloader
       sig { returns(T.nilable(Integer)) }
       attr_reader(:parent_id)
 
+      sig { returns(Integer) }
+      attr_reader(:post_id)
+
       sig { returns(T.nilable(String)) }
       attr_reader(:rating)
 
@@ -76,6 +79,7 @@ module E621ExportDownloader
         @locked_tags         = T.let(T.must(record["locked_tags"]).empty? ? nil : record["locked_tags"], T.nilable(String))
         @parent_changed      = T.let(record["parent_changed"] == "t", T::Boolean)
         @parent_id           = T.let(T.must(record["parent_id"]).empty? ? nil : record["parent_id"].to_i, T.nilable(Integer))
+        @post_id             = T.let(record["post_id"].to_i, Integer)
         @rating              = T.let(T.must(record["rating"]).empty? ? nil : record["rating"], T.nilable(String))
         @rating_changed      = T.let(record["rating_changed"] == "t", T::Boolean)
         @reason              = T.let(T.must(record["reason"]).empty? ? nil : record["reason"], T.nilable(String))
@@ -102,6 +106,7 @@ module E621ExportDownloader
           locked_tags:         @locked_tags,
           parent_changed:      @parent_changed,
           parent_id:           @parent_id,
+          post_id:             @post_id,
           rating:              @rating,
           rating_changed:      @rating_changed,
           reason:              @reason,

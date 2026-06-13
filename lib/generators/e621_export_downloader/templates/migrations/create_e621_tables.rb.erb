@@ -19,7 +19,7 @@ class CreateE621Tables < ActiveRecord::Migration<%= migration_version %>
       t.string(:name, null: false, index: { unique: true })
       t.text(:other_names, array: true, null: false, default: [])
       t.datetime(:updated_at, null: false)
-      t.text(:urls, array: true, null: false, default: [])
+      t.text(:urls, null: false)
     end
 
     create_table(<%= table_ref("bulk_update_requests") %>, id: :bigint, default: nil, force: :cascade) do |t|
@@ -100,6 +100,7 @@ class CreateE621Tables < ActiveRecord::Migration<%= migration_version %>
       t.text(:locked_tags)
       t.boolean(:parent_changed, null: false)
       t.bigint(:parent_id)
+      t.bigint(:post_id, null: false)
       t.string(:rating)
       t.boolean(:rating_changed, null: false)
       t.text(:reason)

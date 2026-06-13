@@ -25,6 +25,7 @@ module E621
     private_class_method(def self.attributes_from_export(record)
       {
         id:                  record.id,
+        post_id:             record.post_id,
         added_locked_tags:   record.added_locked_tags,
         added_tags:          record.added_tags,
         description:         record.description,
