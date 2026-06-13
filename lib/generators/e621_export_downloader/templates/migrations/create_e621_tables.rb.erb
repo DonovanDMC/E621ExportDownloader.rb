@@ -2,6 +2,8 @@
 
 class CreateE621Tables < ActiveRecord::Migration<%= migration_version %>
   def change
+    enable_extension("pg_trgm")
+
 <% if use_schema? -%>
     reversible do |r|
       r.up { execute("CREATE SCHEMA <%= schema %>") }
@@ -15,22 +17,27 @@ class CreateE621Tables < ActiveRecord::Migration<%= migration_version %>
       t.string(:group_name)
       t.boolean(:is_active, null: false)
       t.boolean(:is_locked, null: false)
-      t.bigint(:linked_user_id)
+      t.bigint(:linked_user_id, index: true)
       t.string(:name, null: false, index: { unique: true })
       t.text(:other_names, array: true, null: false, default: [])
       t.datetime(:updated_at, null: false)
-      t.text(:urls, null: false)
+      t.text(:urls)
+      t.index("group_name gin_trgm_ops", using: :gin)
+      t.index("name gin_trgm_ops", using: :gin)
     end
 
     create_table(<%= table_ref("bulk_update_requests") %>, id: :bigint, default: nil, force: :cascade) do |t|
-      t.bigint(:approver_id)
+      t.bigint(:approver_id, index: true)
       t.datetime(:created_at, null: false)
-      t.bigint(:forum_topic_id)
+      t.bigint(:forum_topic_id, index: true)
+      t.bigint(:forum_post_id, index: true)
       t.text(:script, null: false)
       t.string(:status, null: false, index: true)
       t.string(:title)
       t.datetime(:updated_at, null: false)
       t.bigint(:user_id, null: false, index: true)
+      t.index("script gin_trgm_ops", using: :gin)
+      t.index("title gin_trgm_ops", using: :gin)
     end
 
     create_table(<%= table_ref("pools") %>, id: :bigint, default: nil, force: :cascade) do |t|
@@ -40,12 +47,14 @@ class CreateE621Tables < ActiveRecord::Migration<%= migration_version %>
       t.text(:description, null: false)
       t.boolean(:is_active, null: false)
       t.string(:name, null: false, index: true)
-      t.bigint(:post_ids, array: true, null: false, default: [])
+      t.bigint(:post_ids, array: true, null: false, default: [], index: { using: :gin })
       t.datetime(:updated_at)
+      t.index("description gin_trgm_ops", using: :gin)
+      t.index("name gin_trgm_ops", using: :gin)
     end
 
     create_table(<%= table_ref("posts") %>, id: :bigint, default: nil, force: :cascade) do |t|
-      t.bigint(:approver_id)
+      t.bigint(:approver_id, index: true)
       t.bigint(:change_seq, null: false)
       t.integer(:comment_count, null: false)
       t.datetime(:created_at, null: false)
@@ -58,60 +67,70 @@ class CreateE621Tables < ActiveRecord::Migration<%= migration_version %>
       t.integer(:image_height, null: false)
       t.integer(:image_width, null: false)
       t.boolean(:is_deleted, null: false, index: true)
-      t.boolean(:is_flagged, null: false)
-      t.boolean(:is_note_locked, null: false)
-      t.boolean(:is_pending, null: false)
-      t.boolean(:is_rating_locked, null: false)
-      t.boolean(:is_status_locked, null: false)
+      t.boolean(:is_flagged, null: false, index: true)
+      t.boolean(:is_note_locked, null: false, index: true)
+      t.boolean(:is_pending, null: false, index: true)
+      t.boolean(:is_rating_locked, null: false, index: true)
+      t.boolean(:is_status_locked, null: false, index: true)
       t.text(:locked_tags, null: false)
       t.string(:md5, index: { unique: true }, null: false)
-      t.bigint(:parent_id)
+      t.bigint(:parent_id, index: true)
       t.string(:rating, null: false, index: true)
       t.integer(:score, null: false)
-      t.text(:sources, array: true, null: false, default: [])
-      t.text(:tags, array: true, null: false, default: [])
+      t.text(:source, null: false)
+      t.text(:tag_string, null: false)
       t.integer(:up_score, null: false)
-      t.datetime(:updated_at)
+      t.datetime(:updated_at, index: true)
       t.bigint(:uploader_id, index: true)
+      t.index("description gin_trgm_ops", using: :gin)
+      t.index("source gin_trgm_ops", using: :gin)
+      t.index("tag_string gin_trgm_ops", using: :gin)
     end
 
     create_table(<%= table_ref("post_replacements") %>, id: :bigint, default: nil, force: :cascade) do |t|
-      t.bigint(:approver_id)
+      t.bigint(:approver_id, index: true)
       t.datetime(:created_at, null: false)
       t.bigint(:creator_id, null: false, index: true)
-      t.string(:file_ext, null: false)
-      t.string(:file_name, null: false)
-      t.bigint(:file_size, null: false)
-      t.integer(:image_height, null: false)
-      t.integer(:image_width, null: false)
-      t.string(:md5, null: false)
+      t.string(:file_ext, null: false, index: true)
+      t.string(:file_name, null: false, index: true)
+      t.bigint(:file_size, null: false, index: true)
+      t.integer(:image_height, null: false, index: true)
+      t.integer(:image_width, null: false, index: true)
+      t.string(:md5, null: false, index: true)
       t.bigint(:post_id, null: false, index: true)
       t.text(:reason, null: false)
       t.text(:source)
       t.string(:status, null: false, index: true)
       t.datetime(:updated_at, null: false)
+      t.index("reason gin_trgm_ops", using: :gin)
+      t.index("source gin_trgm_ops", using: :gin)
     end
 
     create_table(<%= table_ref("post_versions") %>, id: :bigint, default: nil, force: :cascade) do |t|
       t.text(:added_locked_tags, array: true, null: false, default: [])
       t.text(:added_tags, array: true, null: false, default: [])
       t.text(:description)
-      t.boolean(:description_changed, null: false)
+      t.boolean(:description_changed, null: false, index: true)
       t.text(:locked_tags)
-      t.boolean(:parent_changed, null: false)
+      t.boolean(:parent_changed, null: false, index: true)
       t.bigint(:parent_id)
-      t.bigint(:post_id, null: false)
+      t.bigint(:post_id, null: false, index: true)
       t.string(:rating)
-      t.boolean(:rating_changed, null: false)
+      t.boolean(:rating_changed, null: false, index: true)
       t.text(:reason)
       t.text(:removed_locked_tags, array: true, null: false, default: [])
       t.text(:removed_tags, array: true, null: false, default: [])
       t.text(:source)
-      t.boolean(:source_changed, null: false)
+      t.boolean(:source_changed, null: false, index: true)
       t.text(:tags)
       t.datetime(:updated_at, null: false, index: true)
-      t.bigint(:updater_id, null: false, index: true)
-      t.integer(:version, null: false)
+      t.bigint(:updater_id, index: true)
+      t.integer(:version, null: false, index: true)
+      t.index("description gin_trgm_ops", using: :gin)
+      t.index("locked_tags gin_trgm_ops", using: :gin)
+      t.index("reason gin_trgm_ops", using: :gin)
+      t.index("source gin_trgm_ops", using: :gin)
+      t.index("tags gin_trgm_ops", using: :gin)
     end
 
     create_table(<%= table_ref("tag_aliases") %>, id: :bigint, default: nil, force: :cascade) do |t|
@@ -119,6 +138,9 @@ class CreateE621Tables < ActiveRecord::Migration<%= migration_version %>
       t.string(:consequent_name, null: false, index: true)
       t.datetime(:created_at)
       t.string(:status, null: false, index: true)
+      t.index(%i[status antecedent_name])
+      t.index("antecedent_name gin_trgm_ops", using: :gin)
+      t.index("consequent_name gin_trgm_ops", using: :gin)
     end
 
     create_table(<%= table_ref("tag_implications") %>, id: :bigint, default: nil, force: :cascade) do |t|
@@ -126,22 +148,34 @@ class CreateE621Tables < ActiveRecord::Migration<%= migration_version %>
       t.string(:consequent_name, null: false, index: true)
       t.datetime(:created_at)
       t.string(:status, null: false, index: true)
+      t.index(%i[status consequent_name])
+      t.index(%i[status antecedent_name])
+      t.index("antecedent_name gin_trgm_ops", using: :gin)
+      t.index("consequent_name gin_trgm_ops", using: :gin)
     end
 
     create_table(<%= table_ref("tags") %>, id: :bigint, default: nil, force: :cascade) do |t|
       t.string(:category, null: false, index: true)
       t.string(:name, null: false, index: { unique: true })
-      t.integer(:post_count, null: false)
+      t.integer(:post_count, null: false, index: { order: { post_count: :desc } })
+      t.index(%i[category post_count], order: { post_count: :desc })
+      t.index("name gin_trgm_ops", using: :gin)
     end
 
     create_table(<%= table_ref("wiki_pages") %>, id: :bigint, default: nil, force: :cascade) do |t|
-      t.text(:body, null: false)
+      t.text(:body, null: false, index: true)
       t.datetime(:created_at, null: false)
-      t.bigint(:creator_id, index: true)
-      t.boolean(:is_locked, null: false)
+      t.bigint(:creator_id, null: false, index: true)
+      t.boolean(:is_locked, null: false, index: true)
       t.string(:title, null: false, index: { unique: true })
-      t.datetime(:updated_at)
-      t.bigint(:uploader_id)
+      t.datetime(:updated_at, null: false)
+      t.bigint(:updater_id, index: true)
+      t.index("body gin_trgm_ops", using: :gin)
+      t.index("title gin_trgm_ops", using: :gin)
+    end
+
+    create_table(<%= table_ref("row_counts") %>, primary_key: :table_name, id: :string, force: :cascade) do |t|
+      t.bigint(:count, null: false, default: 0)
     end
   end
 end
