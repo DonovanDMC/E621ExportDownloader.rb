@@ -40,8 +40,8 @@ module E621ExportDownloader
       true
     end
 
-    sig { returns(String) }
-    def download
+    sig { params(block: T.nilable(T.proc.params(received: Integer, total: Integer).void)).returns(String) }
+    def download(&block)
       raise(ResolveError, "Export #{type.serialize} does not exist") unless exists?
       if check_downloaded
         client.debug("using cached export", header: ["export:#{type.serialize}"])
@@ -55,9 +55,10 @@ module E621ExportDownloader
         inflater = Zlib::Inflate.new(Zlib::MAX_WBITS + 16)
 
         res = client.connection.get(data.url) do |req|
-          req.options.on_data = proc do |chunk, _total|
+          req.options.on_data = proc do |chunk, received|
             decompressed = inflater.inflate(chunk)
             file.write(decompressed) if decompressed && !decompressed.empty?
+            block.call(received, data.file_size) if block
           end
         end
 
