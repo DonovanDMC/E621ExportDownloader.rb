@@ -29,6 +29,7 @@ module E621
         created_at:  record.created_at,
         creator_id:  record.creator_id,
         is_locked:   record.is_locked,
+        parent:      record.parent,
         title:       record.title,
         updated_at:  record.updated_at,
         uploader_id: record.uploader_id,

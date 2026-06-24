@@ -27,10 +27,13 @@ module E621
         id:             record.id,
         approver_id:    record.approver_id,
         created_at:     record.created_at,
+        down_votes:     record.down_votes,
         forum_topic_id: record.forum_topic_id,
+        meh_votes:      record.meh_votes,
         script:         record.script,
         status:         record.status,
         title:          record.title,
+        up_votes:       record.up_votes,
         updated_at:     record.updated_at,
         user_id:        record.user_id,
       }

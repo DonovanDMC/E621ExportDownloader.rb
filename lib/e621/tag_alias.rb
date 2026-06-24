@@ -26,9 +26,19 @@ module E621
       {
         id:              record.id,
         antecedent_name: record.antecedent_name,
+        approver_id:     record.approver_id,
         consequent_name: record.consequent_name,
         created_at:      record.created_at,
+        # creator_id:      record.creator_id,
+        down_votes:      record.down_votes,
+        forum_post_id:   record.forum_post_id,
+        forum_topic_id:  record.forum_topic_id,
+        meh_votes:       record.meh_votes,
+        post_count:      record.post_count,
+        reason:          record.reason,
         status:          record.status,
+        up_votes:        record.up_votes,
+        updated_at:      record.updated_at,
       }
     end)
   end

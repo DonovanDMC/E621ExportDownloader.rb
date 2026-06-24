@@ -21,6 +21,9 @@ module E621ExportDownloader
       sig { returns(T::Boolean) }
       attr_reader(:is_locked)
 
+      sig { returns(T.nilable(String)) }
+      attr_reader(:parent)
+
       sig { returns(String) }
       attr_reader(:title)
 
@@ -38,7 +41,8 @@ module E621ExportDownloader
         @creator_id = T.let(T.must(record["creator_id"]).empty? ? nil : record["creator_id"].to_i, T.nilable(Integer))
         @id = T.let(record["id"].to_i, Integer)
         @is_locked = T.let(record["is_locked"] == "t", T::Boolean)
-        @title = T.let(T.must(record["title"]), String)
+        @parent    = T.let(T.must(record["parent"]).empty? ? nil : record["parent"], T.nilable(String))
+        @title     = T.let(T.must(record["title"]), String)
         @updated_at = T.let(T.must(record["updated_at"]).empty? ? nil : DateTime.parse(record["updated_at"]), T.nilable(DateTime))
         @updater_id = T.let(T.must(record["updater_id"]).empty? ? nil : record["updater_id"].to_i, T.nilable(Integer))
       end
@@ -51,6 +55,7 @@ module E621ExportDownloader
           creator_id: @creator_id,
           id:         @id,
           is_locked:  @is_locked,
+          parent:     @parent,
           title:      @title,
           updated_at: @updated_at,
           updater_id: @updater_id,

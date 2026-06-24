@@ -25,16 +25,17 @@ module E621
     private_class_method(def self.attributes_from_export(record)
       {
         id:             record.id,
+        active_urls:    record.active_urls,
         created_at:     record.created_at,
         creator_id:     record.creator_id,
         group_name:     record.group_name,
+        inactive_urls:  record.inactive_urls,
         is_active:      record.is_active,
         is_locked:      record.is_locked,
         linked_user_id: record.linked_user_id,
         name:           record.name,
         other_names:    record.other_names,
         updated_at:     record.updated_at,
-        urls:           record.urls,
       }
     end)
   end
