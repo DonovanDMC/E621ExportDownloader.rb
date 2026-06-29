@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-require "date"
+require("date")
 
 def categorize(subject)
   case subject
@@ -22,7 +22,7 @@ entries = shas.map do |sha|
   date         = Date.parse(date_str).strftime("%Y-%m-%d")
   section      = categorize(subject)
 
-  { version:, date:, section:, subject:, body: }
+  { version: version, date: date, section: section, subject: subject, body: body }
 end
 
 changelog = +"# Changelog\n"
@@ -47,4 +47,4 @@ entries.each do |e|
 end
 
 File.write("CHANGELOG.md", changelog)
-puts "Generated CHANGELOG.md"
+puts("Generated CHANGELOG.md")
