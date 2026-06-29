@@ -1,0 +1,28 @@
+name: Generate Changelog
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - lib/e621_export_downloader/version.rb
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+      - run: ruby scripts/generate_changelog.rb
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update CHANGELOG.md"
+          file_pattern: CHANGELOG.md
